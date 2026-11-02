@@ -218,3 +218,24 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Kaggle datasets (keep locally, not in Git)
+data/*.csv
+
+# Generated Kaggle submissions
+submissions/*.csv
+
+# Trained model files
+*.pt
+*.pth
+*.pkl
+*.joblib
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
