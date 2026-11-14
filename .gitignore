@@ -239,3 +239,4 @@ submissions/*.csv
 # Jupyter notebook checkpoints
 .ipynb_checkpoints/
 
+data/*.csv
