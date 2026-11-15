@@ -5,31 +5,44 @@ sys.path.insert(0, ".")
 import pandas as pd
 
 from src.data_utils import load_task, standardize
-from src.neural_network import count_params, train_model
+from src.nn import count_params, train_model
+from src.nn_config import DEFAULTS, N_CLASSES
 
-TASK = "sentiment"                       # task
-N_CLASSES = {"image": 50, "sentiment": 3}[TASK]
+import numpy as np
+
+TASK = "image"  
+RUN = "dropout"                     #  sweep
+
+
+BEST = {**DEFAULTS,
+       # "weight_decay": 1e-3,
+       # "hidden_sizes": (512, 256),
+        }
+
+SWEEPS = {
+    "lr": [dict(lr=v) for v in (1e-2, 1e-3, 1e-4)],
+    "dropout": [dict(dropout=p) for p in (0.0, 0.2, 0.5)],
+    "weight_decay": [dict(weight_decay=w) for w in (0.0, 1e-5, 1e-4, 1e-3, 1e-2)],
+    "hidden_sizes": [dict(hidden_sizes=h)
+                     for h in ((), (64,), (256,), (256, 64), (512, 256))],
+    "batch_size": [dict(batch_size=b) for b in (32, 64, 128, 512)],
+    "activation": [dict(activation=a) for a in ("relu", "tanh", "leaky_relu")],
+    "optimizer": [dict(optimizer="adam", lr=BEST["lr"]),
+                  dict(optimizer="sgd", lr=1e-2)],
+}
+
 os.makedirs("results", exist_ok=True)
-
 X_tr, X_val, y_tr, y_val = load_task(TASK)
+
+#X_tr, X_val = np.sqrt(X_tr), np.sqrt(X_val)    TEST ONLY: image features, before standardize
 X_tr, X_val = standardize(X_tr, X_val)     # mean/std from train only
-
-# Current best settings
-BEST = dict(hidden_sizes=(256, 64), activation="relu", dropout=0.0,
-            lr=1e-4, weight_decay=0.0, batch_size=64, optimizer="adam")        
-
-"""
- IMAGE FINAL: hidden_sizes=(512, 256), activation="relu", dropout=0.0,
-              lr=1e-3, weight_decay=1e-3, batch_size=64, optimizer="adam", best epoch 17
-"""
 
 def sweep(name, variants):
     rows = []
+    print(f"\n=== {TASK}: sweep over {name} ===")
     for ov in variants:
-        cfg = {**BEST, **ov}
-        print(f"\n--- running {ov} ---")
         model, h = train_model(X_tr, y_tr, X_val, y_val,
-                               n_classes=N_CLASSES, verbose=True, **cfg)
+                               n_classes=N_CLASSES[TASK], **{**BEST, **ov})
         b = h["best_epoch"]
         rows.append({"setting": ", ".join(f"{k}={v}" for k, v in ov.items()),
                      "train_acc": round(h["train_acc"][b], 4),
@@ -38,31 +51,13 @@ def sweep(name, variants):
                      "best_epoch": b + 1,
                      "train_time_s": round(h["train_time"], 1),
                      "params": count_params(model)})
-        print(rows[-1])
+        print(rows[-1]["setting"], "-> val_acc", rows[-1]["val_acc"])
     df = pd.DataFrame(rows)
-    print(f"\n=== {TASK}: sweep over {name} ===")
     print(df.to_string(index=False))
+
     df.to_csv(f"results/nn_{TASK}_{name}.csv", index=False)
-    return df
 
-
-# sweep("lr", [dict(lr=v) for v in (1e-2, 1e-3, 1e-4)])
-
-"""
-sweep("hidden_sizes", [dict(hidden_sizes=h) for h in
-      ((), (64,), (256,), (256, 64), (512, 256))])
-"""
-
-# sweep("dropout", [dict(dropout=p) for p in (0.0, 0.2, 0.5)])
-# sweep("weight_decay", [dict(weight_decay=w) for w in (0.0, 1e-5, 1e-4, 1e-3, 1e-2)])
-#sweep("batch_size", [dict(batch_size=b) for b in (32, 64, 128, 512)])
-#sweep("activation", [dict(activation=a) for a in ("relu", "tanh", "leaky_relu")])
-#sweep("optimizer", [dict(optimizer="adam", lr=1e-4), dict(optimizer="sgd", lr=1e-2)])
-"""
-sweep("round2", [
-    dict(weight_decay=5e-4), dict(weight_decay=2e-3),
-    dict(dropout=0.2, weight_decay=1e-3),
-    dict(dropout=0.2, weight_decay=5e-4),
-    dict(lr=5e-4), dict(lr=2e-3),
-])
-"""
+if RUN != "all" and RUN not in SWEEPS:
+    raise SystemExit(f"RUN must be 'all' or one of: {list(SWEEPS)}")
+for name in (list(SWEEPS) if RUN == "all" else [RUN]):
+    sweep(name, SWEEPS[name])

@@ -1,0 +1,4 @@
+setting,train_acc,val_acc,gap,best_epoch,train_time_s,params
+activation=relu,0.7639,0.6746,0.0893,5,5.4,213507
+activation=tanh,0.7072,0.6746,0.0326,3,5.1,213507
+activation=leaky_relu,0.7621,0.6746,0.0875,5,5.2,213507

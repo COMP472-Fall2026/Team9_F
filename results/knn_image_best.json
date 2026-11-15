@@ -1,0 +1,8 @@
+{
+  "scaling": "sqrt",
+  "pca": 0,
+  "metric": "cosine",
+  "k": 1,
+  "weighting": "uniform",
+  "val_acc": 0.56275
+}

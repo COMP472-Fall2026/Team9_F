@@ -1,17 +1,16 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from src.preprocessing import load_task as _load_raw, get_split
+
 
 DATA_DIR = "data"
 SEED = 42
 
-def load_task(task, val_size=0.2, seed=SEED, data_dir=DATA_DIR):
-    """task: 'image' or 'sentiment'. Returns numpy arrays (float32 features)."""
-    df = pd.read_csv(f"{data_dir}/{task}_train.csv")
-    X = df.drop(columns=["id", "label"]).to_numpy(dtype=np.float32)
-    y = df["label"].to_numpy(dtype=np.int64)
-    return train_test_split(X, y, test_size=val_size,
-                            random_state=seed, stratify=y)
+def load_task(task):
+    X, y, _, _ = _load_raw(task)                
+    train_idx, val_idx = get_split(task, y)     
+    return X[train_idx], X[val_idx], y[train_idx], y[val_idx]
     # -> X_train, X_val, y_train, y_val
 
 def load_test(task, data_dir=DATA_DIR):

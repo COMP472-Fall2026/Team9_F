@@ -1,0 +1,4 @@
+setting,train_acc,val_acc,gap,best_epoch,train_time_s,params
+dropout=0.0,1.0,0.3428,0.6572,13,13.1,147954
+dropout=0.2,0.8541,0.3248,0.5293,10,12.7,147954
+dropout=0.5,0.7136,0.3027,0.4109,33,28.6,147954

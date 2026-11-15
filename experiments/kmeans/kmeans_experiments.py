@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 
-from src.clustering import KMeans
+from src.kmeans import KMeans
 from src.data_utils import load_full_train, standardize
 
 TASK = "image"                                  # task
