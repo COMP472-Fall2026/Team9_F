@@ -1,0 +1,5 @@
+setting,train_acc,val_acc,gap,best_epoch,train_time_s,params
+weight_decay=0.0,0.7639,0.6746,0.0893,5,4.4,213507
+weight_decay=0.01,0.7501,0.6812,0.0689,5,5.3,213507
+weight_decay=0.03,0.7822,0.6808,0.1014,11,6.7,213507
+weight_decay=0.1,0.6885,0.6725,0.016,37,16.8,213507

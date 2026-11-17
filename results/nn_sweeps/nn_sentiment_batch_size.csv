@@ -1,0 +1,5 @@
+setting,train_acc,val_acc,gap,best_epoch,train_time_s,params
+batch_size=32,0.7191,0.6767,0.0424,2,14.8,213507
+batch_size=64,0.7639,0.6746,0.0893,5,8.4,213507
+batch_size=128,0.7312,0.6746,0.0567,5,7.2,213507
+batch_size=512,0.7748,0.6754,0.0994,17,9.0,213507

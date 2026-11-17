@@ -1,0 +1,8 @@
+{
+  "scaling": "standardize",
+  "pca": 50,
+  "metric": "cosine",
+  "k": 50,
+  "weighting": "uniform",
+  "val_acc": 0.5945833333
+}

@@ -1,0 +1,3 @@
+setting,train_acc,val_acc,gap,best_epoch,train_time_s,params
+"optimizer=adam, lr=0.0001",0.7639,0.6746,0.0893,5,5.2,213507
+"optimizer=sgd, lr=0.01",0.7517,0.6729,0.0788,2,3.3,213507
