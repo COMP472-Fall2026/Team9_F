@@ -1,0 +1,2 @@
+params,train_acc_hard,val_acc_hard,val_acc_soft,val_acc,voting,seconds
+"{""n_estimators"": 100, ""max_depth"": 25, ""min_samples_leaf"": 1, ""max_features"": ""sqrt"", ""max_thresholds"": 32, ""random_state"": 42}",1.0,0.59,0.5891666666666666,0.59,hard,171.48

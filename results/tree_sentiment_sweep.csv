@@ -1,0 +1,9 @@
+params,train_acc,val_acc,seconds
+"{""max_depth"": 4, ""min_samples_leaf"": 2, ""max_thresholds"": 64, ""random_state"": 42}",0.5204166666666666,0.47333333333333333,2.91
+"{""max_depth"": 4, ""min_samples_leaf"": 10, ""max_thresholds"": 64, ""random_state"": 42}",0.5236458333333334,0.4741666666666667,2.84
+"{""max_depth"": 6, ""min_samples_leaf"": 2, ""max_thresholds"": 64, ""random_state"": 42}",0.5713541666666667,0.47875,6.04
+"{""max_depth"": 6, ""min_samples_leaf"": 10, ""max_thresholds"": 64, ""random_state"": 42}",0.5769791666666667,0.4795833333333333,5.74
+"{""max_depth"": 8, ""min_samples_leaf"": 2, ""max_thresholds"": 64, ""random_state"": 42}",0.6821875,0.47833333333333333,37.3
+"{""max_depth"": 8, ""min_samples_leaf"": 10, ""max_thresholds"": 64, ""random_state"": 42}",0.6779166666666666,0.48375,40.61
+"{""max_depth"": 10, ""min_samples_leaf"": 2, ""max_thresholds"": 64, ""random_state"": 42}",0.8217708333333333,0.46625,87.22
+"{""max_depth"": 10, ""min_samples_leaf"": 10, ""max_thresholds"": 64, ""random_state"": 42}",0.7652083333333334,0.46291666666666664,65.96

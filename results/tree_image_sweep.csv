@@ -1,0 +1,4 @@
+params,train_acc_hard,val_acc_hard,val_acc_soft,val_acc,voting,seconds
+"{""max_depth"": 40, ""min_samples_leaf"": 1, ""max_thresholds"": 64, ""random_state"": 42}",0.5534375,0.105,,0.105,hard,65.9
+"{""max_depth"": 40, ""min_samples_leaf"": 3, ""max_thresholds"": 64, ""random_state"": 42}",0.4123125,0.10525,,0.10525,hard,39.11
+"{""max_depth"": 40, ""min_samples_leaf"": 5, ""max_thresholds"": 64, ""random_state"": 42}",0.385125,0.1135,,0.1135,hard,30.75
