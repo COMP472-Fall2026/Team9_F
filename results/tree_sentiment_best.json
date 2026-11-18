@@ -1,0 +1,9 @@
+{
+  "params": {
+    "max_depth": 8,
+    "min_samples_leaf": 10,
+    "max_thresholds": 64,
+    "random_state": 42
+  },
+  "val_acc": 0.48375
+}
