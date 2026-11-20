@@ -26,7 +26,7 @@ class MLP(nn.Module):
             if dropout > 0:
                 layers.append(nn.Dropout(dropout))
             prev = h
-        layers.append(nn.Linear(prev, n_classes))   # logits, no softmax
+        layers.append(nn.Linear(prev, n_classes))   
         self.net = nn.Sequential(*layers)
 
     def forward(self, x):
@@ -50,7 +50,6 @@ def predict(model, X):
 
 @torch.no_grad()
 def evaluate(model, X, y):
-    """Returns (cross-entropy loss, accuracy)."""
     model.eval()
     X = torch.as_tensor(X, dtype=torch.float32)
     y = torch.as_tensor(y, dtype=torch.long)
@@ -66,7 +65,7 @@ def train_model(X_tr, y_tr, X_val=None, y_val=None, n_classes=None,
                 batch_size=64, epochs=50, patience=10, seed=42,
                 verbose=False):
    
-    set_seed(seed)                       # before the model is created
+    set_seed(seed)                       
     n_classes = n_classes or int(np.max(y_tr)) + 1
     model = MLP(X_tr.shape[1], n_classes, hidden_sizes, activation, dropout)
 
@@ -95,10 +94,10 @@ def train_model(X_tr, y_tr, X_val=None, y_val=None, n_classes=None,
     for epoch in range(epochs):
         model.train()
         for xb, yb in loader:
-            opt.zero_grad()                    # 1. clear old gradients
-            loss = loss_fn(model(xb), yb)      # 2. forward pass + loss
-            loss.backward()                    # 3. backward pass (backprop)
-            opt.step()                         # 4. update the weights
+            opt.zero_grad()                    
+            loss = loss_fn(model(xb), yb)      
+            loss.backward()                    
+            opt.step()                         
 
         tr_loss, tr_acc = evaluate(model, X_tr, y_tr)
         history["train_loss"].append(tr_loss)

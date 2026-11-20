@@ -35,7 +35,7 @@ for task, cfg in FINAL.items():
                                epochs=cfg["epochs"], **hp)
         pred = predict(model, X_test_f)
 
-    # save predictions (matched to IDs, not row order) 
+    # save predictions 
     assert len(pred) == len(ids) == 5000
     assert pred.min() >= 0 and pred.max() < n_classes
     pd.DataFrame({"id": ids, "label": pred.astype(int)}).to_csv(
