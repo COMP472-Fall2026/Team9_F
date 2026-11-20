@@ -12,12 +12,12 @@ A k-means clustering experiment was also conducted.
 
 
 # Team Members 
-Team : 472_
+Team : COMP472_Group09_F
 | Name | Student ID | GitHub Username |
 |---|---|---|
-| Bethany Abebe | 40282242 | [BethanyABE](https://github.com/BethanyABE) |
+| Adja Boye  | xxx | [boyeadja](https://github.com/boyeadja) |
 | Ange Akaliza | xxx |[Ellakaliza](https://github.com/Ellakaliza)  |
-| Ella Kaliza  | xxx | [boyeadja](https://github.com/boyeadja) |
+| Bethany Abebe | 40282242 | [BethanyABE](https://github.com/BethanyABE) |
 
 ## Setup
 
@@ -105,7 +105,7 @@ Final configs (chosen on the validation set):
 | Batch size | 64 | 64 |
 | Optimizer | Adam | Adam |
 | Epochs for final retrain | 44 | 5 |
-.
+
 
 ### Clustering (k-means)
 ```
