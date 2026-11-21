@@ -16,14 +16,14 @@ Team : COMP472_Group09_F
 | Name | Student ID | GitHub Username |
 |---|---|---|
 | Adja Boye  | xxx | [boyeadja](https://github.com/boyeadja) |
-| Ange Akaliza | 402870048 |[Ellakaliza](https://github.com/Ellakaliza)  |
+| Ange Akaliza | 40270048 |[Ellakaliza](https://github.com/Ellakaliza)  |
 | Bethany Abebe | 40282242 | [BethanyABE](https://github.com/BethanyABE) |
 
 ## Setup
 
 Run the following commands from the repository root to create and activate a virtual environment and install the necessary dependancies:
 
-###Linux or macOS
+*Linux or macOS*
 
 ```
 python -m venv .venv
@@ -31,7 +31,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-###Windows Powershell
+*Windows Powershell*
 
 ```
 python -m venv .venv
