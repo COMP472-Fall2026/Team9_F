@@ -34,7 +34,7 @@ SWEEPS = {
 os.makedirs("results", exist_ok=True)
 X_tr, X_val, y_tr, y_val = load_task(TASK)
 
-#X_tr, X_val = np.sqrt(X_tr), np.sqrt(X_val)    TEST ONLY: image features, before standardize
+#X_tr, X_val = np.sqrt(X_tr), np.sqrt(X_val)    TEST ONLY
 X_tr, X_val = standardize(X_tr, X_val)     # mean/std from train only
 
 def sweep(name, variants):
