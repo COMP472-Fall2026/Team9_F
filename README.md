@@ -41,7 +41,7 @@ python -m pip install -r requirements.txt
 - Python: 3.12.3
 - Key libraries: numpy, pandas, matplotlib scikit-learn, torch
 
-Download the competition files from the Data tab of the [Kaggle competition](https://www.kaggle.com/competitions/comp-472-project-fall-2026-concordia) in `data/` :
+Download the competition files from the Data tab of the [Kaggle competition](https://www.kaggle.com/competitions/comp-472-project-fall-2026-concordia) and place them in `data/` :
 - `image_train.csv`
 - `image_test.csv`
 - `sentiment_train.csv`
