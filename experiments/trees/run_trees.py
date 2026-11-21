@@ -64,10 +64,12 @@ def main():
     args = parser.parse_args()
 
     RESULTS.mkdir(exist_ok=True)
+    # Run the same workflow for each requested dataset.
     for task in TASKS if args.task == 'all' else [args.task]:
         X, y, X_test, ids = load_task(task)
         best_path = RESULTS / f'{args.model}_{task}_best.json'
 
+        # Refit the selected configuration on all labeled data before predicting test labels.
         if args.final:
             if not best_path.exists():
                 raise FileNotFoundError(f'Run validation first: {best_path}')
@@ -82,6 +84,7 @@ def main():
             print(f'{task}: wrote {len(pred)} {voting}-voting test predictions to {output}')
             continue
 
+        # Use the shared saved split so all models are evaluated on identical examples.
         train, val = get_split(task, y)
         prep = Preprocessor('none').fit(X[train])
         X_train = prep.transform(X[train])
@@ -93,6 +96,7 @@ def main():
         best_pred = None
         best_voting = None
 
+        # Train each candidate and compare validation accuracy.
         for params in candidates(args.model, args.seed, args.fast, task):
             start = time.perf_counter()
             model = make_model(args.model, params).fit(X_train, y[train])
@@ -105,6 +109,7 @@ def main():
             voting = 'hard'
             pred = hard_pred
             accuracy = hard_accuracy
+            # Evaluate both voting rules and keep the better one for this forest.
             if args.model == 'forest':
                 soft_pred = predict_with_voting(model, X_val, args.model, 'soft')
                 soft_accuracy = float(np.mean(soft_pred == y[val]))
@@ -129,6 +134,7 @@ def main():
                   f'val_selected={accuracy:.4f} voting={voting} '
                   f'time={elapsed:.1f}s {params}', flush=True)
 
+            # Track the best configuration and its validation predictions.
             if accuracy > best_acc:
                 best_acc = accuracy
                 best_params = params

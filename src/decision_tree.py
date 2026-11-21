@@ -40,6 +40,8 @@ class DecisionTree:
             raise ValueError('Expected nonempty X (n, d) and y (n,)')
         if not np.isfinite(X).all():
             raise ValueError('X must contain only finite numbers')
+        # Encode labels as consecutive integers for fast counting, while retaining
+        # the original class labels to restore them during prediction.
         self.classes_, encoded = np.unique(y, return_inverse=True)
         self.n_features_in_ = X.shape[1]
         if self.n_features_in_ == 0:
@@ -49,6 +51,7 @@ class DecisionTree:
         self._rng = np.random.default_rng(self.random_state)
         self._X = X
         self._y = encoded
+        # Sum the impurity reductions attributed to each feature across the tree.
         self.feature_importances_ = np.zeros(self.n_features_in_, dtype=np.float64)
         self.root_ = self._grow(np.arange(len(y)), depth=0)
         total = self.feature_importances_.sum()
@@ -84,11 +87,15 @@ class DecisionTree:
         n = len(indices)
         counts = np.bincount(self._y[indices], minlength=self.n_classes_)
         node = _Node(counts / n)
+        # Stop at pure nodes, undersized nodes, or the configured depth limit.
+        # Both children must be able to satisfy min_samples_leaf.
         if (counts.max() == n or n < self.min_samples_split or
                 n < 2 * self.min_samples_leaf or
                 (self.max_depth is not None and depth >= self.max_depth)):
             return node
         parent_impurity = float(self._impurity(counts))
+        # Sample features independently at each node; forests use this to
+        # introduce diversity among their trees.
         features = self._rng.choice(self.n_features_in_, self._feature_count, replace=False)
         best_gain = 0.0
         best_feature = -1
@@ -98,26 +105,31 @@ class DecisionTree:
             values = self._X[indices, feature]
             order = np.argsort(values, kind='stable')
             sorted_values = values[order]
+            # Split only between distinct values, with enough samples on each side.
             valid = np.flatnonzero(sorted_values[:-1] < sorted_values[1:])
             valid = valid[(valid + 1 >= self.min_samples_leaf) &
                           (n - valid - 1 >= self.min_samples_leaf)]
             if not len(valid):
                 continue
+            # Evaluate a limited, evenly spaced selection when there are many cuts.
             if self.max_thresholds is not None and len(valid) > self.max_thresholds:
                 positions = np.linspace(0, len(valid) - 1, self.max_thresholds).astype(int)
                 valid = valid[positions]
             labels = self._y[indices[order]]
-            # Count labels in the intervals between candidate split positions.
-            # This avoids allocating an (n_samples, n_classes) one-hot matrix.
+            # Count classes in intervals between candidate cuts, avoiding an
+            # (n_samples, n_classes) one-hot matrix for every feature.
             buckets = np.searchsorted(valid, np.arange(n), side='left')
             codes = buckets * self.n_classes_ + labels
             interval_counts = np.bincount(
                 codes, minlength=(len(valid) + 1) * self.n_classes_
             ).reshape(len(valid) + 1, self.n_classes_)
+            # Prefix sums yield class counts left of every cut; subtracting
+            # from the parent counts gives the corresponding right-side counts.
             left_counts = np.cumsum(interval_counts[:-1], axis=0)
             right_counts = counts - left_counts
             left_n = valid + 1
             right_n = n - left_n
+            # Prefer the split with the largest reduction in weighted impurity.
             weighted = (left_n * self._impurity(left_counts) +
                         right_n * self._impurity(right_counts)) / n
             gains = parent_impurity - weighted
@@ -135,6 +147,7 @@ class DecisionTree:
         a = float(self._X[ordered_indices[best_cut], best_feature])
         b = float(self._X[ordered_indices[best_cut + 1], best_feature])
         node.feature = best_feature
+        # The midpoint separates the two adjacent distinct training values.
         node.threshold = a + (b - a) / 2
         self.feature_importances_[best_feature] += n * best_gain
         node.left = self._grow(left_indices, depth + 1)
@@ -150,6 +163,8 @@ class DecisionTree:
         if not np.isfinite(X).all():
             raise ValueError('X must contain only finite numbers')
         result = np.empty((len(X), self.n_classes_), dtype=float)
+        # Route batches of rows with a stack rather than traversing separately
+        # for every sample; leaves assign their observed class distributions.
         stack = [(self.root_, np.arange(len(X)))]
         while stack:
             node, rows = stack.pop()

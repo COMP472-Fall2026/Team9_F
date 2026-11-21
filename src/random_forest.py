@@ -4,6 +4,7 @@ from src.decision_tree import DecisionTree
 
 
 class RandomForest:
+    # Combine independently trained decision trees to reduce prediction variance.
     def __init__(self, n_estimators=100, max_depth=None, min_samples_split=2,
                  min_samples_leaf=1, max_features='sqrt', criterion='gini',
                  max_thresholds=None, bootstrap=True, max_samples=None,
@@ -33,6 +34,7 @@ class RandomForest:
             raise ValueError('X must contain only finite numbers')
         if not self.bootstrap and self.max_samples is not None:
             raise ValueError('max_samples requires bootstrap=True')
+        # Each tree trains on either all rows or a bootstrap sample of the requested size.
         n = len(y)
         if self.max_samples is None:
             sample_size = n
@@ -47,10 +49,13 @@ class RandomForest:
         self.classes_ = np.unique(y)
         self.n_features_in_ = X.shape[1]
         self.estimators_ = []
+        # Use a shared generator to draw reproducible samples and distinct tree seeds.
         rng = np.random.default_rng(self.random_state)
         for _ in range(self.n_estimators):
+            # Bootstrap sampling draws rows with replacement, so rows may repeat.
             indices = rng.integers(0, n, size=sample_size) if self.bootstrap else np.arange(n)
             seed = int(rng.integers(0, np.iinfo(np.int32).max))
+            # Each tree also samples features independently at its split nodes.
             tree = DecisionTree(max_depth=self.max_depth,
                                 min_samples_split=self.min_samples_split,
                                 min_samples_leaf=self.min_samples_leaf,
@@ -59,6 +64,7 @@ class RandomForest:
                                 max_thresholds=self.max_thresholds,
                                 random_state=seed)
             self.estimators_.append(tree.fit(X[indices], y[indices]))
+        # Report the average normalized impurity-based importance across trees.
         self.feature_importances_ = np.mean(
             [tree.feature_importances_ for tree in self.estimators_], axis=0)
         return self
@@ -69,8 +75,11 @@ class RandomForest:
         X = np.asarray(X, dtype=np.float32)
         if X.ndim != 2 or X.shape[1] != self.n_features_in_:
             raise ValueError('X has the wrong shape')
+        # Soft voting: average each tree's class probabilities.
         scores = np.zeros((len(X), len(self.classes_)), dtype=float)
         for tree in self.estimators_:
+            # Bootstrap samples may omit classes; align each tree's columns
+            # with the full forest class list before accumulating probabilities.
             columns = np.searchsorted(self.classes_, tree.classes_)
             scores[:, columns] += tree.predict_proba(X)
         return scores / len(self.estimators_)
@@ -81,9 +90,11 @@ class RandomForest:
         X = np.asarray(X, dtype=np.float32)
         if X.ndim != 2 or X.shape[1] != self.n_features_in_:
             raise ValueError('X has the wrong shape')
+        # Hard voting: count each tree's predicted class and take the majority.
         votes = np.zeros((len(X), len(self.classes_)), dtype=np.int32)
         rows = np.arange(len(X))
         for tree in self.estimators_:
             cols = np.searchsorted(self.classes_, tree.predict(X))
+            # Add one vote per sample, including when several samples share a class.
             np.add.at(votes, (rows, cols), 1)
         return self.classes_[votes.argmax(axis=1)]

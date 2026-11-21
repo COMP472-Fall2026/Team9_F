@@ -6,6 +6,7 @@ from src.decision_tree import DecisionTree
 from src.random_forest import RandomForest
 
 
+# Load the unoptimized reference tree separately for behavioral comparisons.
 def load_original():
     path = Path(__file__).resolve().parent / 'reference_decision_tree.py'
     spec = importlib.util.spec_from_file_location('original_decision_tree', path)
@@ -17,11 +18,13 @@ def load_original():
 
 
 class OptimizationTests(unittest.TestCase):
+        # Confirm the faster split-counting implementation preserves predictions, probabilities, and importances.
     def test_original_vs_optimized(self):
         Original = load_original()
         rng = np.random.default_rng(101)
         for n, d, classes in [(80, 7, 3), (140, 13, 50)]:
             X = rng.normal(size=(n, d)).astype(np.float32)
+            X[:, 0] = np.round(X[:, 0], 1)  # Include tied values to exercise split-boundary handling.
             X[:, 0] = np.round(X[:, 0], 1)  # repeated feature values
             y = rng.integers(0, classes, size=n)
             for criterion in ('gini', 'entropy'):
@@ -35,6 +38,7 @@ class OptimizationTests(unittest.TestCase):
                     np.testing.assert_allclose(original.predict_proba(X), optimized.predict_proba(X))
                     np.testing.assert_allclose(original.feature_importances_, optimized.feature_importances_)
 
+        # Both voting strategies should produce one valid class label per sample.
     def test_forest_soft_and_hard_votes_valid(self):
         rng = np.random.default_rng(17)
         X = rng.normal(size=(100, 9))
