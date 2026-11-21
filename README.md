@@ -15,7 +15,7 @@ A k-means clustering experiment was also conducted.
 Team : COMP472_Group09_F
 | Name | Student ID | GitHub Username |
 |---|---|---|
-| Adja Boye  | xxx | [boyeadja](https://github.com/boyeadja) |
+| Adja Boye  | 40281923 | [boyeadja](https://github.com/boyeadja) |
 | Ange Akaliza | 40270048 |[Ellakaliza](https://github.com/Ellakaliza)  |
 | Bethany Abebe | 40282242 | [BethanyABE](https://github.com/BethanyABE) |
 
