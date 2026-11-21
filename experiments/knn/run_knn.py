@@ -1,3 +1,7 @@
+"""k-NN sweep on the validation split, and final test predictions with --final
+
+python experiments/knn/run_knn.py [--task image|sentiment|all] [--manhattan] [--final]
+"""
 import argparse
 import json
 import sys
@@ -21,6 +25,7 @@ SENTIMENT = ["Negative", "Neutral", "Positive"]
 
 
 def configs(task, manhattan):
+    # sqrt only for images since sentiment features can be negative
     metrics = ["euclidean", "cosine"] + ["manhattan"] * manhattan
     scalings = ["none", "standardize"] + ["sqrt"] * (task == "image")
     return [(s, 0, m) for s in scalings for m in metrics] + [("standardize", 50, "cosine")]
@@ -57,11 +62,13 @@ def plot_confusion(task, cm):
 
 
 def sweep(task, X, y, manhattan):
+    """Try every config on validation, save the results and the best one"""
     train, val = get_split(task, y)
     rows = []
     for scaling, pca, metric in configs(task, manhattan):
         prep = Preprocessor(scaling, pca).fit(X[train])
         start = time.perf_counter()
+        # search for 100 neighbours once and reuse the first k for every smaller k
         dist, idx = KNN(max(K_VALUES), metric).fit(prep.transform(X[train]), y[train]).kneighbors(prep.transform(X[val]))
         seconds = round(time.perf_counter() - start, 2)
         for k in K_VALUES:
@@ -76,6 +83,7 @@ def sweep(task, X, y, manhattan):
     (RESULTS / f"knn_{task}_best.json").write_text(json.dumps(best, indent=2))
     print(f"[{task}] best: {best}")
 
+    # error analysis on the best config
     pred = predict(best, X[train], y[train], X[val])
     pd.DataFrame({"row": val, "true": y[val], "pred": pred}).to_csv(RESULTS / f"knn_{task}_val_predictions.csv", index=False)
     cm = np.zeros((TASKS[task][1], TASKS[task][1]), dtype=int)
@@ -93,6 +101,7 @@ def sweep(task, X, y, manhattan):
 
 
 def final(task, X, y, X_test, ids):
+    """Refit the best config on all labelled data and predict the test set"""
     best = json.loads((RESULTS / f"knn_{task}_best.json").read_text())
     pd.DataFrame({"id": ids, "label": predict(best, X, y, X_test)}).to_csv(RESULTS / f"knn_{task}_test_predictions.csv", index=False)
     print(f"[{task}] wrote test predictions with {best}")

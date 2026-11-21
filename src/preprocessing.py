@@ -1,3 +1,7 @@
+"""Loading, shared train/val split, preprocessing and data exploration
+
+Run it directly to print dataset stats and save the exploration plots
+"""
 import argparse
 from pathlib import Path
 
@@ -11,10 +15,11 @@ import pandas as pd
 SEED = 42
 DATA_DIR = Path("data")
 SPLIT_DIR = Path("splits")
-TASKS = {"image": (500, 50), "sentiment": (768, 3)}
+TASKS = {"image": (500, 50), "sentiment": (768, 3)}  # (n features, n classes)
 
 
 def load_task(task):
+    """Returns X_train, y_train, X_test and the test ids"""
     dims, n_classes = TASKS[task]
     cols = [f"feature_{i}" for i in range(dims)]
     train = pd.read_csv(DATA_DIR / f"{task}_train.csv")
@@ -25,9 +30,11 @@ def load_task(task):
 
 
 def get_split(task, y, val_fraction=0.2):
+    """Stratified 80/20 split, saved to disk so every model uses the same rows"""
     path = SPLIT_DIR / f"{task}_split.npz"
     if not path.exists():
         rng = np.random.default_rng(SEED)
+        # take 20% of each class for validation
         val = np.concatenate([rng.permutation(np.flatnonzero(y == c))[: round(val_fraction * (y == c).sum())] for c in np.unique(y)])
         SPLIT_DIR.mkdir(exist_ok=True)
         np.savez(path, train=np.setdiff1d(np.arange(len(y)), val), val=np.sort(val))
@@ -38,6 +45,12 @@ def get_split(task, y, val_fraction=0.2):
 
 
 class Preprocessor:
+    """scaling: none, sqrt (image only) or standardize, optionally followed by PCA
+
+    fit on the training split only, then transform val/test with the same stats
+    so nothing leaks from validation
+    """
+
     def __init__(self, scaling="none", pca=0):
         self.scaling, self.pca = scaling, pca
 
@@ -45,9 +58,10 @@ class Preprocessor:
         if self.scaling == "sqrt":
             X = np.sqrt(X)
         if self.scaling == "standardize":
-            self.mean, self.std = X.mean(0), X.std(0) + 1e-8
+            self.mean, self.std = X.mean(0), X.std(0) + 1e-8  # +1e-8 in case a feature is constant
             X = (X - self.mean) / self.std
         if self.pca:
+            # rows of Vt from the SVD are the principal directions
             self.center = X.mean(0)
             self.components = np.linalg.svd(X - self.center, full_matrices=False)[2][: self.pca]
         return self
@@ -63,6 +77,7 @@ class Preprocessor:
 
 
 def explore(task, X, y, X_test, fig_dir):
+    """Print basic stats and save the PCA variance curve + 2D scatter"""
     centered = X - X.mean(0)
     _, s, vt = np.linalg.svd(centered, full_matrices=False)
     variance = np.cumsum(s**2) / (s**2).sum()
@@ -73,6 +88,7 @@ def explore(task, X, y, X_test, fig_dir):
     print(f"row L2 norm: train {np.linalg.norm(X, axis=1).mean():.2f}, test {np.linalg.norm(X_test, axis=1).mean():.2f}")
     print(f"PCA components for 90% variance: {np.searchsorted(variance, 0.9) + 1}")
 
+    # 4000 random points so the scatter isn't a blob
     sample = np.random.default_rng(SEED).choice(len(X), 4000, replace=False)
     projected = centered[sample] @ vt[:2].T
     fig, (left, right) = plt.subplots(1, 2, figsize=(12, 5))
