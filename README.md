@@ -16,12 +16,14 @@ Team : COMP472_Group09_F
 | Name | Student ID | GitHub Username |
 |---|---|---|
 | Adja Boye  | xxx | [boyeadja](https://github.com/boyeadja) |
-| Ange Akaliza | xxx |[Ellakaliza](https://github.com/Ellakaliza)  |
+| Ange Akaliza | 402870048 |[Ellakaliza](https://github.com/Ellakaliza)  |
 | Bethany Abebe | 40282242 | [BethanyABE](https://github.com/BethanyABE) |
 
 ## Setup
 
 Run the following commands from the repository root to create and activate a virtual environment and install the necessary dependancies:
+
+###Linux or macOS
 
 ```
 python -m venv .venv
@@ -29,6 +31,13 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+###Windows Powershell
+
+```
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 - Python: 3.12.3
 - Key libraries: numpy, pandas, matplotlib scikit-learn, torch
 
@@ -73,18 +82,19 @@ python experiments/knn/run_knn.py --final    # test predictions with the best se
 
 ### Decision Tree and Random Forest
 
-```bash
-# 1. Validation sweep: tries the candidate settings, saves the best one
-python experiments/trees/run_trees.py --model tree --task all
-python experiments/trees/run_trees.py --model forest --task all
+```
+# Decision Tree: validation sweeps
+python experiments/trees/run_trees.py --model tree --task image
+python experiments/trees/run_trees.py --model tree --task sentiment
 
-# 2. Test predictions: refits the best settings on all labeled data
+# Random Forest: validation sweeps
+python experiments/trees/run_trees.py --model forest --task image
+python experiments/trees/run_trees.py --model forest --task sentiment
+
+# Generate final test predictions
 python experiments/trees/run_trees.py --model tree --final
 python experiments/trees/run_trees.py --model forest --final
 ```
-
-Run step 1 before step 2.
-
 
 ### Neural network
 Settings live in `src/nn_config.py` (`DEFAULTS` for tuning, `FINAL` for the chosen config).
